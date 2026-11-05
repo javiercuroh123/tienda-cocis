@@ -1,0 +1,23 @@
+name: tienda-cocis
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: tienda-cocis-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cocis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cocis123}
+      POSTGRES_DB: ${POSTGRES_DB:-tiendacocis}
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_cocis:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-cocis} -d $${POSTGRES_DB:-tiendacocis}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata_cocis:

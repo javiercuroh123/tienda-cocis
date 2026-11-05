@@ -1,0 +1,7 @@
+node_modules/
+.next/
+out/
+*.exe
+*.log
+.env
+.env.local

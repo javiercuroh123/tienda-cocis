@@ -1,0 +1,505 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >> >> /Contents 8 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >> >> /Contents 9 0 R >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+8 0 obj
+<< /Length 4671 >>
+stream
+0.72 0.11 0.11 rg 45 795 505 3 re f
+BT
+/F2 16.0 Tf
+0.09 0.09 0.11 rg
+45.0 805.0 Td
+(GUION DE EXPOSICION AL PROFESOR - PROYECTO TIENDACOCIS \(SHALOM\)) Tj
+ET
+BT
+/F1 10.0 Tf
+0.35 0.35 0.40 rg
+45.0 780.0 Td
+(Enfoque principal: Backend en Go \(Golang\), Arquitectura Hexagonal y Patrones Singleton y Strategy) Tj
+ET
+BT
+/F2 12.5 Tf
+0.72 0.11 0.11 rg
+45.0 752.0 Td
+(1. INTRODUCCION Y CONTEXTO DEL PROYECTO \(Minuto 1\)) Tj
+ET
+0.96 0.96 0.97 rg 46.0 728.0 505 16.0 re f
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+52.0 733.0 Td
+([Que decir al profesor]:) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 716.0 Td
+("Profesor, nuestro proyecto es TiendaCocis, orientado a la gestion de productos e insumos de) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 702.0 Td
+(embalaje de Shalom en Soles Peruanos \(S/\). El sistema maneja dos CRUDs principales en PostgreSQL) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 688.0 Td
+(\(productos y almacen\) ejecutados en Docker. En el Backend desarrollado en Go aplicamos de forma) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 674.0 Td
+(estricta camelCase, funciones en espanol de 1 a 3 palabras, Arquitectura Hexagonal y dos patrones) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 660.0 Td
+(de diseno: el Patron Creacional Singleton y el Patron de Comportamiento Strategy.") Tj
+ET
+BT
+/F2 10.5 Tf
+0.09 0.09 0.11 rg
+45.0 636.0 Td
+(Estructura de Tablas en el Dominio \(camelCase\):) Tj
+ET
+BT
+/F3 9.0 Tf
+0.15 0.15 0.20 rg
+52.0 620.0 Td
+(- Tabla productos : idProducto \(PK\), nombreProducto, precioUnidad, categoria) Tj
+ET
+BT
+/F3 9.0 Tf
+0.15 0.15 0.20 rg
+52.0 606.0 Td
+(- Tabla almacen   : idInventorio \(PK\), idProducto \(FK\), stock, stockMin, ultimaActualizacion) Tj
+ET
+BT
+/F2 12.5 Tf
+0.72 0.11 0.11 rg
+45.0 578.0 Td
+(2. ARQUITECTURA HEXAGONAL: PUERTOS Y ADAPTADORES EN GO \(Minutos 2 y 3\)) Tj
+ET
+0.96 0.96 0.97 rg 46.0 554.0 505 16.0 re f
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+52.0 559.0 Td
+([Que decir al profesor]:) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 542.0 Td
+("Para desacoplar la logica de negocio de la base de datos y de la API REST, estructuramos el) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 528.0 Td
+(backend en Go dentro de la carpeta internal/ siguiendo la Arquitectura Hexagonal en 4 capas:") Tj
+ET
+BT
+/F2 10.0 Tf
+0.09 0.09 0.11 rg
+52.0 506.0 Td
+(A\) Capa de Dominio \(internal/domain/\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 492.0 Td
+(Archivos: product.go, inventory.go e inventoryStrategy.go.) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 478.0 Td
+(Contiene las estructuras puras en camelCase y la logica matematica de las estrategias. No conoce) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 464.0 Td
+(nada de SQL ni de HTTP.) Tj
+ET
+BT
+/F2 10.0 Tf
+0.09 0.09 0.11 rg
+52.0 444.0 Td
+(B\) Capa de Puertos \(internal/ports/\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 430.0 Td
+(- inbound.go \(Puertos de Entrada\): Interfaces ProductService e InventoryService con los metodos) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 416.0 Td
+(  que los controladores HTTP pueden invocar \(ListarProductos, CrearProducto, ActualizarStock...\).) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 402.0 Td
+(- outbound.go \(Puertos de Salida\): Interfaces ProductRepository e InventoryRepository que definen) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 388.0 Td
+(  como el nucleo guarda o consulta datos sin atarse a un motor de base de datos especifico.) Tj
+ET
+BT
+/F2 10.0 Tf
+0.09 0.09 0.11 rg
+52.0 368.0 Td
+(C\) Casos de Uso / Core \(internal/core/\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 354.0 Td
+(Archivos: productService.go e inventoryService.go.) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 340.0 Td
+(Implementan los puertos de entrada, validan las reglas de negocio \(precios positivos, existencia) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 326.0 Td
+(del producto antes de crear su stock\) y aplican la estrategia de inventario correspondiente.) Tj
+ET
+BT
+/F2 10.0 Tf
+0.09 0.09 0.11 rg
+52.0 306.0 Td
+(D\) Capa de Adaptadores \(internal/adapters/\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 292.0 Td
+(- Adaptadores Primarios \(inbound/productHandler.go e inventoryHandler.go\): Controladores HTTP) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 278.0 Td
+(  que reciben las peticiones REST desde React + Next.js y devuelven JSON en camelCase.) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 264.0 Td
+(- Adaptadores Secundarios \(outbound/database.go, productRepository.go, inventoryRepository.go\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+65.0 250.0 Td
+(  Ejecutan las consultas SQL reales sobre PostgreSQL utilizando la conexion Singleton.) Tj
+ET
+BT
+/F1 8.5 Tf
+0.50 0.50 0.55 rg
+45.0 40.0 Td
+(Pagina 1 de 2 - Guion de Exposicion Backend \(TiendaCocis / Shalom\)) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Length 4957 >>
+stream
+0.72 0.11 0.11 rg 45 795 505 3 re f
+BT
+/F2 14.0 Tf
+0.09 0.09 0.11 rg
+45.0 805.0 Td
+(PATRONES DE DISENO EN EL BACKEND Y DEFENSA TECNICA) Tj
+ET
+BT
+/F2 12.5 Tf
+0.72 0.11 0.11 rg
+45.0 772.0 Td
+(3. PATRON CREACIONAL: SINGLETON CON sync.Once \(Minuto 4\)) Tj
+ET
+BT
+/F1 9.5 Tf
+0.30 0.30 0.35 rg
+45.0 755.0 Td
+(Archivo a mostrar al profesor: internal/adapters/outbound/database.go) Tj
+ET
+0.96 0.96 0.97 rg 46.0 732.0 505 16.0 re f
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+52.0 737.0 Td
+([Que decir al profesor]:) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 720.0 Td
+("Aplicamos el Patron Singleton en DatabaseConnection porque abrir una conexion nueva a PostgreSQL) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 706.0 Td
+(en cada peticion HTTP consume demasiados recursos. Con sync.Once en la funcion ObtenerInstancia\(\),) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 692.0 Td
+(Go garantiza que la primera peticion cree la conexion y todas las demas reutilicen esa misma) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 678.0 Td
+(instancia unica en memoria de forma segura ante concurrencia.") Tj
+ET
+0.93 0.94 0.96 rg 46.0 651.0 505 14.0 re f
+BT
+/F3 8.8 Tf
+0.10 0.10 0.12 rg
+52.0 656.0 Td
+(var instancia *DatabaseConnection) Tj
+ET
+0.93 0.94 0.96 rg 46.0 637.0 505 14.0 re f
+BT
+/F3 8.8 Tf
+0.10 0.10 0.12 rg
+52.0 642.0 Td
+(var unaVez sync.Once) Tj
+ET
+0.93 0.94 0.96 rg 46.0 623.0 505 14.0 re f
+BT
+/F3 8.8 Tf
+0.10 0.10 0.12 rg
+52.0 628.0 Td
+(func ObtenerInstancia\(\) *DatabaseConnection {) Tj
+ET
+0.93 0.94 0.96 rg 46.0 609.0 505 14.0 re f
+BT
+/F3 8.8 Tf
+0.10 0.10 0.12 rg
+52.0 614.0 Td
+(    unaVez.Do\(func\(\) { instancia = &DatabaseConnection{...} }\)) Tj
+ET
+0.93 0.94 0.96 rg 46.0 595.0 505 14.0 re f
+BT
+/F3 8.8 Tf
+0.10 0.10 0.12 rg
+52.0 600.0 Td
+(    return instancia) Tj
+ET
+0.93 0.94 0.96 rg 46.0 581.0 505 14.0 re f
+BT
+/F3 8.8 Tf
+0.10 0.10 0.12 rg
+52.0 586.0 Td
+(}) Tj
+ET
+BT
+/F2 12.5 Tf
+0.72 0.11 0.11 rg
+45.0 558.0 Td
+(4. PATRON DE COMPORTAMIENTO: STRATEGY EN INVENTARIO \(Minuto 5\)) Tj
+ET
+BT
+/F1 9.5 Tf
+0.30 0.30 0.35 rg
+45.0 541.0 Td
+(Archivo a mostrar al profesor: internal/domain/inventoryStrategy.go) Tj
+ET
+0.96 0.96 0.97 rg 46.0 518.0 505 16.0 re f
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+52.0 523.0 Td
+([Que decir al profesor]:) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 506.0 Td
+("Para el calculo de valor del almacen y actualizacion de stock implementamos el Patron Strategy) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 492.0 Td
+(mediante la interfaz InventoryStrategy. Esto permite intercambiar dinamicamente tres reglas de) Tj
+ET
+BT
+/F1 9.8 Tf
+0.12 0.12 0.15 rg
+52.0 478.0 Td
+(negocio desde el selector del frontend sin modificar el codigo del servicio de inventario:") Tj
+ET
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+58.0 458.0 Td
+(1. StandardStrategy \(Estandar\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+198.0 458.0 Td
+(Calculo directo sin alteraciones \(stock * precioUnidad\).) Tj
+ET
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+58.0 442.0 Td
+(2. LiquidacionStrategy \(Liquidacion\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+225.0 442.0 Td
+(Aplica 30% de depreciacion sobre el precioUnidad en almacen.) Tj
+ET
+BT
+/F2 9.5 Tf
+0.09 0.09 0.11 rg
+58.0 426.0 Td
+(3. VolumenStrategy \(Por Volumen\):) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+215.0 426.0 Td
+(Bonifica +10% en stock y ajuste de valor en lotes >= 20 uds.) Tj
+ET
+BT
+/F2 12.5 Tf
+0.72 0.11 0.11 rg
+45.0 394.0 Td
+(5. FLUJO COMPLETO Y PREGUNTAS FRECUENTES DEL PROFESOR) Tj
+ET
+BT
+/F2 9.8 Tf
+0.09 0.09 0.11 rg
+52.0 374.0 Td
+(P1: \277Donde se conectan los Puertos y los Adaptadores?) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 360.0 Td
+(R: En cmd/server/main.go dentro de la funcion iniciarServidor\(\). Alli se instancia el Singleton) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 346.0 Td
+(de PostgreSQL, se pasa a los repositorios \(outbound\), luego a los servicios \(core\) y por ultimo) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 332.0 Td
+(a los controladores HTTP \(inbound\).) Tj
+ET
+BT
+/F2 9.8 Tf
+0.09 0.09 0.11 rg
+52.0 310.0 Td
+(P2: \277Por que usar Arquitectura Hexagonal en un proyecto de dos tablas?) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 296.0 Td
+(R: Porque permite probar las reglas de negocio \(como las estrategias del almacen\) sin levantar) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 282.0 Td
+(la base de datos, y si en el futuro cambiamos PostgreSQL por otro motor SQL o NoSQL, el dominio) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 268.0 Td
+(y los casos de uso permanecen intactos.) Tj
+ET
+BT
+/F2 9.8 Tf
+0.09 0.09 0.11 rg
+52.0 246.0 Td
+(P3: \277Como se cumplio la regla de nombres de funciones en el backend?) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 232.0 Td
+(R: Todas las funciones y metodos estan escritos en espanol, en camelCase y tienen entre 1 y 3) Tj
+ET
+BT
+/F1 9.5 Tf
+0.20 0.20 0.25 rg
+52.0 218.0 Td
+(palabras como maximo: listarProductos, crearProducto, actualizarStock, responderJSON, etc.) Tj
+ET
+BT
+/F1 8.5 Tf
+0.50 0.50 0.55 rg
+45.0 40.0 Td
+(Pagina 2 de 2 - Guion de Exposicion Backend \(TiendaCocis / Shalom\)) Tj
+ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000267 00000 n 
+0000000413 00000 n 
+0000000510 00000 n 
+0000000612 00000 n 
+0000000707 00000 n 
+0000005429 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+10437
+%%EOF
