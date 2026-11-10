@@ -76,3 +76,10 @@ npm install
 npm run dev
 ```
 Abre `http://localhost:3000` en tu navegador.
+
+## Despliegue en AWS
+
+Consulta [la guía de EC2](deploy/AWS.md) para desplegar los tres servicios con
+Docker y Caddy. Usa `compose.ec2.yaml` y `.env.ec2.example`; el Compose original
+se mantiene para desarrollo local. La configuración inicial permite acceso
+por túnel SSH sin dominio, y la guía incluye el paso posterior a HTTPS.

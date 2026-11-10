@@ -5,3 +5,10 @@ out/
 *.log
 .env
 .env.local
+.env.*
+!.env.example
+!.env.*.example
+backups/
+.deploy-test/
+*.pem
+tienda-cocis-aws.tar.gz

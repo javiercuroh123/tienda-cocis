@@ -1,0 +1,178 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R /F3 6 0 R >> >> /Contents 7 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>
+endobj
+7 0 obj
+<< /Length 10650 >>
+stream
+0.98 0.98 0.99 rg 0.0 0.0 595.0 842.0 re f
+0.09 0.09 0.11 rg 0.0 770.0 595.0 72.0 re f
+0.72 0.11 0.11 rg 0.0 766.0 595.0 4.0 re f
+BT /F2 16.5 Tf 1.00 1.00 1.00 rg 30.0 812.0 Td (INFOGRAFIA TECNICA: COMO FUNCIONA EL BACKEND EN GO) Tj ET
+BT /F1 10.0 Tf 0.85 0.85 0.88 rg 30.0 792.0 Td (Proyecto TiendaCocis \(Shalom\)  |  Arquitectura Hexagonal + Patron Singleton + Patron Strategy) Tj ET
+0.72 0.11 0.11 rg 462.0 788.0 105.0 34.0 re f
+1.2 w 0.90 0.25 0.25 RG 462.0 788.0 105.0 34.0 re S
+BT /F2 9.5 Tf 1.00 1.00 1.00 rg 474.0 806.0 Td (GO + POSTGRES) Tj ET
+BT /F1 8.0 Tf 0.98 0.90 0.90 rg 480.0 794.0 Td (camelCase 100%) Tj ET
+BT /F2 11.5 Tf 0.72 0.11 0.11 rg 30.0 744.0 Td (1. FLUJO DE UNA PETICION HTTP EN LA ARQUITECTURA HEXAGONAL \(5 PASOS\)) Tj ET
+1.00 1.00 1.00 rg 28.0 638.0 95.0 92.0 re f
+1.2 w 0.75 0.75 0.80 RG 28.0 638.0 95.0 92.0 re S
+0.20 0.20 0.24 rg 28.0 712.0 95.0 18.0 re f
+BT /F2 8.2 Tf 1.00 1.00 1.00 rg 35.0 718.0 Td (1. CLIENTE WEB) Tj ET
+BT /F2 9.0 Tf 0.09 0.09 0.11 rg 36.0 694.0 Td (Next.js React) Tj ET
+BT /F1 7.8 Tf 0.35 0.35 0.40 rg 36.0 680.0 Td (services/api.js) Tj ET
+BT /F3 7.3 Tf 0.72 0.11 0.11 rg 34.0 664.0 Td (JSON camelCase) Tj ET
+BT /F1 7.5 Tf 0.35 0.35 0.40 rg 36.0 648.0 Td (Puerto :3000) Tj ET
+1.8 w 0.72 0.11 0.11 RG 123.0 684.0 m 139.0 684.0 l S
+0.72 0.11 0.11 rg 139.0 684.0 m 133.0 688.0 l 133.0 680.0 l f
+0.99 0.95 0.95 rg 139.0 638.0 102.0 92.0 re f
+1.2 w 0.85 0.35 0.35 RG 139.0 638.0 102.0 92.0 re S
+0.72 0.11 0.11 rg 139.0 712.0 102.0 18.0 re f
+BT /F2 8.0 Tf 1.00 1.00 1.00 rg 145.0 718.0 Td (2. ADAPT. PRIMARIO) Tj ET
+BT /F2 8.5 Tf 0.09 0.09 0.11 rg 146.0 694.0 Td (adapters/inbound) Tj ET
+BT /F3 7.3 Tf 0.20 0.20 0.25 rg 145.0 679.0 Td (productHandler.go) Tj ET
+BT /F3 7.3 Tf 0.20 0.20 0.25 rg 145.0 666.0 Td (inventoryHandler.go) Tj ET
+BT /F1 7.5 Tf 0.35 0.35 0.40 rg 146.0 648.0 Td (Recibe HTTP REST) Tj ET
+1.8 w 0.72 0.11 0.11 RG 241.0 684.0 m 257.0 684.0 l S
+0.72 0.11 0.11 rg 257.0 684.0 m 251.0 688.0 l 251.0 680.0 l f
+0.95 0.97 1.00 rg 257.0 638.0 128.0 92.0 re f
+1.2 w 0.25 0.45 0.78 RG 257.0 638.0 128.0 92.0 re S
+0.15 0.35 0.68 rg 257.0 712.0 128.0 18.0 re f
+BT /F2 8.0 Tf 1.00 1.00 1.00 rg 264.0 718.0 Td (3. NUCLEO \(HEXAGONO\)) Tj ET
+BT /F2 8.3 Tf 0.09 0.09 0.11 rg 264.0 695.0 Td (ports/ + core/ + domain/) Tj ET
+BT /F1 7.6 Tf 0.15 0.35 0.68 rg 264.0 681.0 Td (- Valida reglas negocio) Tj ET
+BT /F1 7.6 Tf 0.15 0.35 0.68 rg 264.0 668.0 Td (- Aplica Strategy stock) Tj ET
+BT /F3 7.2 Tf 0.20 0.20 0.25 rg 264.0 650.0 Td (inventoryStrategy.go) Tj ET
+1.8 w 0.15 0.35 0.68 RG 385.0 684.0 m 401.0 684.0 l S
+0.15 0.35 0.68 rg 401.0 684.0 m 395.0 688.0 l 395.0 680.0 l f
+0.94 0.99 0.95 rg 401.0 638.0 166.0 92.0 re f
+1.2 w 0.18 0.62 0.34 RG 401.0 638.0 166.0 92.0 re S
+0.12 0.52 0.28 rg 401.0 712.0 166.0 18.0 re f
+BT /F2 8.0 Tf 1.00 1.00 1.00 rg 408.0 718.0 Td (4. ADAPT. SECUNDARIO + DB) Tj ET
+BT /F2 8.3 Tf 0.09 0.09 0.11 rg 408.0 695.0 Td (adapters/outbound \(SQL\)) Tj ET
+BT /F3 7.3 Tf 0.12 0.52 0.28 rg 408.0 680.0 Td (database.go \(Singleton\)) Tj ET
+BT /F3 7.3 Tf 0.20 0.20 0.25 rg 408.0 667.0 Td (productRepository.go) Tj ET
+BT /F3 7.3 Tf 0.20 0.20 0.25 rg 408.0 654.0 Td (inventoryRepository.go) Tj ET
+BT /F2 7.6 Tf 0.09 0.09 0.11 rg 408.0 642.0 Td (-> PostgreSQL Docker :5434) Tj ET
+BT /F2 11.5 Tf 0.72 0.11 0.11 rg 30.0 614.0 Td (2. MAPA DE LAS 4 CAPAS DE LA ARQUITECTURA HEXAGONAL \(internal/\)) Tj ET
+1.00 1.00 1.00 rg 28.0 505.0 262.0 98.0 re f
+1.2 w 0.82 0.82 0.86 RG 28.0 505.0 262.0 98.0 re S
+0.15 0.15 0.18 rg 28.0 583.0 262.0 20.0 re f
+BT /F2 9.0 Tf 1.00 1.00 1.00 rg 36.0 590.0 Td (CAPA 1: DOMINIO PURO \(internal/domain/\)) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 36.0 566.0 Td (\225 product.go: IdProducto, NombreProducto, PrecioUnidad, Categoria) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 36.0 551.0 Td (\225 inventory.go: IdInventorio, IdProducto, Stock, StockMin) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 36.0 536.0 Td (\225 inventoryStrategy.go: Interfaz InventoryStrategy y calculos) Tj ET
+BT /F2 8.2 Tf 0.72 0.11 0.11 rg 36.0 517.0 Td (Regla de Oro: No importa librerias de SQL ni HTTP.) Tj ET
+1.00 1.00 1.00 rg 305.0 505.0 262.0 98.0 re f
+1.2 w 0.82 0.82 0.86 RG 305.0 505.0 262.0 98.0 re S
+0.15 0.35 0.68 rg 305.0 583.0 262.0 20.0 re f
+BT /F2 9.0 Tf 1.00 1.00 1.00 rg 313.0 590.0 Td (CAPA 2: PUERTOS / INTERFACES \(internal/ports/\)) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 313.0 566.0 Td (\225 inbound.go \(Puertos de Entrada - Driving Ports\):) Tj ET
+BT /F3 7.8 Tf 0.15 0.35 0.68 rg 322.0 553.0 Td (interface ProductService / interface InventoryService) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 313.0 537.0 Td (\225 outbound.go \(Puertos de Salida - Driven Ports\):) Tj ET
+BT /F3 7.8 Tf 0.15 0.35 0.68 rg 322.0 524.0 Td (interface ProductRepository / InventoryRepository) Tj ET
+1.00 1.00 1.00 rg 28.0 395.0 262.0 98.0 re f
+1.2 w 0.82 0.82 0.86 RG 28.0 395.0 262.0 98.0 re S
+0.45 0.22 0.68 rg 28.0 473.0 262.0 20.0 re f
+BT /F2 9.0 Tf 1.00 1.00 1.00 rg 36.0 480.0 Td (CAPA 3: CASOS DE USO / CORE \(internal/core/\)) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 36.0 456.0 Td (\225 productService.go \(ServicioProducto\):) Tj ET
+BT /F3 7.8 Tf 0.30 0.30 0.35 rg 44.0 443.0 Td (ListarProductos, CrearProducto, ActualizarProducto...) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 36.0 427.0 Td (\225 inventoryService.go \(ServicioInventario\):) Tj ET
+BT /F3 7.8 Tf 0.30 0.30 0.35 rg 44.0 414.0 Td (ListarInventario, CrearInventario, ActualizarStock...) Tj ET
+1.00 1.00 1.00 rg 305.0 395.0 262.0 98.0 re f
+1.2 w 0.82 0.82 0.86 RG 305.0 395.0 262.0 98.0 re S
+0.12 0.52 0.28 rg 305.0 473.0 262.0 20.0 re f
+BT /F2 9.0 Tf 1.00 1.00 1.00 rg 313.0 480.0 Td (CAPA 4: ADAPTADORES \(internal/adapters/\)) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 313.0 456.0 Td (\225 Primarios HTTP \(inbound/\): ManejarProductos,) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 322.0 443.0 Td (ManejarInventario, responderJSON, responderError.) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 313.0 427.0 Td (\225 Secundarios SQL \(outbound/\): ObtenerInstancia,) Tj ET
+BT /F1 8.5 Tf 0.20 0.20 0.25 rg 322.0 414.0 Td (GuardarProducto, ModificarInventario, BuscarInventario.) Tj ET
+BT /F2 11.5 Tf 0.72 0.11 0.11 rg 30.0 372.0 Td (3. PATRONES DE DISENO IMPLEMENTADOS EN GO \(SINGLETON + STRATEGY\)) Tj ET
+0.99 0.99 1.00 rg 28.0 175.0 262.0 185.0 re f
+1.2 w 0.12 0.52 0.28 RG 28.0 175.0 262.0 185.0 re S
+0.12 0.52 0.28 rg 28.0 338.0 262.0 22.0 re f
+BT /F2 9.5 Tf 1.00 1.00 1.00 rg 36.0 346.0 Td (PATRON CREACIONAL: SINGLETON \(database.go\)) Tj ET
+BT /F2 8.6 Tf 0.09 0.09 0.11 rg 36.0 322.0 Td (\277Que problema resuelve?) Tj ET
+BT /F1 8.2 Tf 0.25 0.25 0.30 rg 36.0 309.0 Td (Evita abrir multiples conexiones pesadas a PostgreSQL) Tj ET
+BT /F1 8.2 Tf 0.25 0.25 0.30 rg 36.0 297.0 Td (en cada peticion HTTP que llega desde el frontend.) Tj ET
+BT /F2 8.6 Tf 0.09 0.09 0.11 rg 36.0 279.0 Td (\277Como funciona en Go?) Tj ET
+BT /F1 8.2 Tf 0.25 0.25 0.30 rg 36.0 266.0 Td (Usa sync.Once en ObtenerInstancia\(\) para garantizar) Tj ET
+BT /F1 8.2 Tf 0.25 0.25 0.30 rg 36.0 254.0 Td (una sola instancia global segura ante concurrencia:) Tj ET
+0.93 0.95 0.94 rg 36.0 186.0 246.0 58.0 re f
+BT /F3 7.8 Tf 0.08 0.35 0.18 rg 42.0 232.0 Td (var instancia *DatabaseConnection) Tj ET
+BT /F3 7.8 Tf 0.08 0.35 0.18 rg 42.0 220.0 Td (var unaVez sync.Once) Tj ET
+BT /F3 7.8 Tf 0.08 0.35 0.18 rg 42.0 208.0 Td (func ObtenerInstancia\(\) *DatabaseConnection {) Tj ET
+BT /F3 7.8 Tf 0.08 0.35 0.18 rg 42.0 196.0 Td (  unaVez.Do\(func\(\) { ... }\) // 1 sola vez) Tj ET
+BT /F3 7.8 Tf 0.08 0.35 0.18 rg 42.0 188.0 Td (}) Tj ET
+0.99 0.99 1.00 rg 305.0 175.0 262.0 185.0 re f
+1.2 w 0.72 0.11 0.11 RG 305.0 175.0 262.0 185.0 re S
+0.72 0.11 0.11 rg 305.0 338.0 262.0 22.0 re f
+BT /F2 9.5 Tf 1.00 1.00 1.00 rg 313.0 346.0 Td (PATRON COMPORTAMIENTO: STRATEGY \(domain/\)) Tj ET
+BT /F2 8.6 Tf 0.09 0.09 0.11 rg 313.0 322.0 Td (Interfaz: InventoryStrategy \(inventoryStrategy.go\)) Tj ET
+BT /F3 7.8 Tf 0.72 0.11 0.11 rg 313.0 308.0 Td (CalcularValor\(stock, precioUnidad\) | CalcularStock\(stock\)) Tj ET
+0.96 0.97 0.98 rg 313.0 266.0 246.0 34.0 re f
+1.2 w 0.75 0.75 0.80 RG 313.0 266.0 246.0 34.0 re S
+BT /F2 8.3 Tf 0.09 0.09 0.11 rg 320.0 287.0 Td (1. StandardStrategy \('estandar'\)) Tj ET
+BT /F1 7.9 Tf 0.30 0.30 0.35 rg 320.0 274.0 Td (Valor real directo: stock * precioUnidad \(100% en S/\)) Tj ET
+0.99 0.95 0.95 rg 313.0 226.0 246.0 34.0 re f
+1.2 w 0.88 0.60 0.60 RG 313.0 226.0 246.0 34.0 re S
+BT /F2 8.3 Tf 0.72 0.11 0.11 rg 320.0 247.0 Td (2. LiquidacionStrategy \('liquidacion'\)) Tj ET
+BT /F1 7.9 Tf 0.30 0.30 0.35 rg 320.0 234.0 Td (Depreciacion del 30%: stock * \(precioUnidad * 0.70\)) Tj ET
+0.94 0.98 0.95 rg 313.0 184.0 246.0 36.0 re f
+1.2 w 0.55 0.80 0.62 RG 313.0 184.0 246.0 36.0 re S
+BT /F2 8.3 Tf 0.12 0.52 0.28 rg 320.0 207.0 Td (3. VolumenStrategy \('volumen'\)) Tj ET
+BT /F1 7.9 Tf 0.30 0.30 0.35 rg 320.0 193.0 Td (Si stock >= 20 uds: bonifica +10% stock y ajuste de valor) Tj ET
+0.12 0.12 0.15 rg 28.0 38.0 539.0 122.0 re f
+1.2 w 0.25 0.25 0.30 RG 28.0 38.0 539.0 122.0 re S
+BT /F2 10.5 Tf 1.00 1.00 1.00 rg 40.0 142.0 Td (4. ENDPOINTS REST EXPUESTOS POR EL BACKEND \(cmd/server/main.go - Puerto :8080\)) Tj ET
+BT /F3 8.3 Tf 0.45 0.85 0.55 rg 40.0 122.0 Td (GET    /api/products) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 175.0 122.0 Td (-> listarProductos\(\)) Tj ET
+BT /F3 8.3 Tf 0.45 0.85 0.55 rg 40.0 107.0 Td (POST   /api/products) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 175.0 107.0 Td (-> crearProducto\(\)) Tj ET
+BT /F3 8.3 Tf 0.45 0.85 0.55 rg 40.0 92.0 Td (PUT    /api/products/{id}) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 175.0 92.0 Td (-> actualizarProducto\(\)) Tj ET
+BT /F3 8.3 Tf 0.45 0.85 0.55 rg 40.0 77.0 Td (DELETE /api/products/{id}) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 175.0 77.0 Td (-> eliminarProducto\(\)) Tj ET
+BT /F3 8.3 Tf 0.55 0.78 0.98 rg 305.0 122.0 Td (GET    /api/inventory?estrategia=...) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 472.0 122.0 Td (-> listarInventario\(\)) Tj ET
+BT /F3 8.3 Tf 0.55 0.78 0.98 rg 305.0 107.0 Td (POST   /api/inventory) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 472.0 107.0 Td (-> crearInventario\(\)) Tj ET
+BT /F3 8.3 Tf 0.55 0.78 0.98 rg 305.0 92.0 Td (PUT    /api/inventory/{id}) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 472.0 92.0 Td (-> actualizarStock\(\)) Tj ET
+BT /F3 8.3 Tf 0.55 0.78 0.98 rg 305.0 77.0 Td (DELETE /api/inventory/{id}) Tj ET
+BT /F1 8.3 Tf 0.90 0.90 0.92 rg 472.0 77.0 Td (-> eliminarInventario\(\)) Tj ET
+0.20 0.20 0.25 rg 40.0 48.0 515.0 20.0 re f
+BT /F2 8.3 Tf 0.98 0.82 0.35 rg 48.0 55.0 Td (CHECKLIST DE REQUISITOS:) Tj ET
+BT /F1 8.2 Tf 1.00 1.00 1.00 rg 172.0 55.0 Td (camelCase en Go  |  Funciones en espanol \(1 a 3 palabras\)  |  2 CRUDs PostgreSQL Docker  |  Moneda S/) Tj ET
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000261 00000 n 
+0000000358 00000 n 
+0000000460 00000 n 
+0000000560 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+11262
+%%EOF
