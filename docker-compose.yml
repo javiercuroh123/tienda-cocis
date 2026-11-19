@@ -14,7 +14,7 @@ services:
       - pgdata_cocis:/var/lib/postgresql/data
       # Base vacía: esquema anterior + migraciones, en orden alfabético.
       # Un volumen ya inicializado NO ejecuta estos archivos (ver README).
-      - ./init.sql:/docker-entrypoint-initdb.d/000_init.sql:ro
+      - ./db/init.sql:/docker-entrypoint-initdb.d/000_init.sql:ro
       - ./db/migrations/001_logistica.sql:/docker-entrypoint-initdb.d/001_logistica.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-cocis} -d $${POSTGRES_DB:-tiendacocis}"]

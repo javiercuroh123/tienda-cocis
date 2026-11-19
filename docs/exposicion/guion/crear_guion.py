@@ -12,8 +12,8 @@ pdfmetrics.registerFont(TTFont('Arial', 'C:/Windows/Fonts/arial.ttf'))
 pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
 pdfmetrics.registerFontFamily('Arial', normal='Arial', bold='Arial-Bold', italic='Arial', boldItalic='Arial-Bold')
 
-ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'output/pdf/Guion_Exposicion_Proyecto_TiendaCocis.pdf'
+# El PDF se genera junto a este script (docs/exposicion/guion/).
+OUT = Path(__file__).resolve().parent / 'Guion_Exposicion_Proyecto_TiendaCocis.pdf'
 OUT.parent.mkdir(parents=True, exist_ok=True)
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(name='TitleX', fontName='Helvetica-Bold', fontSize=27, leading=31, textColor=colors.HexColor('#123047'), spaceAfter=15))

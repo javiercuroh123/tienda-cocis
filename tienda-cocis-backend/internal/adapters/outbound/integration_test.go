@@ -1,7 +1,7 @@
 package outbound_test
 
 // Pruebas de integración contra PostgreSQL real. Se omiten si TEST_DATABASE_URL no está definida.
-// Usar SIEMPRE una base desechable con init.sql + db/migrations aplicados (ver README).
+// Usar SIEMPRE una base desechable con db/init.sql + db/migrations aplicados (ver README).
 
 import (
 	"errors"

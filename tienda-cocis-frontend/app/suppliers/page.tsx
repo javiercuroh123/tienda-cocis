@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import CatalogPage from "../../components/catalogPage";
+import { Badge } from "../../components/ui";
+import { Icon } from "../../components/icons";
 import { proveedorService } from "../../services/catalogService";
 import { obtenerProductos } from "../../services/productService";
-import type { Producto } from "../../types";
+import type { Producto, Proveedor } from "../../types";
 
 export default function SuppliersPage() {
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -15,57 +17,80 @@ export default function SuppliersPage() {
       .catch(() => setProductos([]));
   }, []);
 
-  const nombre = (idProducto: string) =>
-    productos.find((p) => p.idProducto === idProducto)?.nombreProducto || idProducto;
+  const nombre = (idProducto: string) => productos.find((p) => p.idProducto === idProducto)?.nombreProducto || idProducto;
 
   return (
-    <CatalogPage
+    <CatalogPage<Proveedor>
       titulo="Proveedores"
-      subtitulo="Proveedores y los productos que abastecen (producto_proveedor)"
+      subtitulo="Empresas que abastecen los productos del catálogo"
+      sustantivo={["proveedor", "proveedores"]}
+      icono="proveedor"
+      avatar
       servicio={proveedorService}
       clave="idProveedor"
       vacio={{ idProveedor: "", nombre: "", telefono: "", productos: [] }}
       campos={[
-        { nombre: "nombre", etiqueta: "Nombre" },
-        { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel" },
+        { nombre: "nombre", etiqueta: "Proveedor", placeholder: "Ej. Cartones del Perú S.A.C." },
+        {
+          nombre: "telefono",
+          etiqueta: "Teléfono",
+          tipo: "tel",
+          placeholder: "Ej. 01 456 7890",
+          ancho: 160,
+          formato: (p) => (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+              <Icon name="telefono" size={14} />
+              {p.telefono}
+            </span>
+          ),
+        },
       ]}
-      extraFormulario={(valor, cambiar) => (
-        <fieldset className="field">
-          <legend className="mb-1 text-sm font-medium">Productos que abastece</legend>
-          <div className="grid gap-1 sm:grid-cols-2">
-            {productos.map((p) => (
-              <label key={p.idProducto} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={valor.productos.includes(p.idProducto)}
-                  onChange={(e) =>
-                    cambiar({
-                      ...valor,
-                      productos: e.target.checked
-                        ? [...valor.productos, p.idProducto]
-                        : valor.productos.filter((id) => id !== p.idProducto),
-                    })
-                  }
-                />
-                {p.nombreProducto}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
       columnaExtra={{
-        titulo: "Productos",
-        celda: (valor) =>
-          valor.productos.length === 0 ? (
-            <span className="text-zinc-400">—</span>
+        titulo: "Productos que abastece",
+        ancho: 420,
+        celda: (p) =>
+          p.productos.length === 0 ? (
+            <span style={{ color: "var(--texto-3)" }}>—</span>
           ) : (
-            <ul className="list-disc pl-4 text-sm">
-              {valor.productos.map((id) => (
-                <li key={id}>{nombre(id)}</li>
+            <div className="chips">
+              {p.productos.map((id) => (
+                <Badge key={id}>{nombre(id)}</Badge>
               ))}
-            </ul>
+            </div>
           ),
       }}
+      extraFormulario={(valor, cambiar) => (
+        <fieldset className="field">
+          <legend className="field-label" style={{ marginBottom: 6 }}>
+            Productos que abastece
+          </legend>
+          {productos.length === 0 ? (
+            <p className="field-help">No hay productos en el catálogo.</p>
+          ) : (
+            <div className="check-list">
+              {productos.map((p) => (
+                <label key={p.idProducto} className="check-item">
+                  <input
+                    type="checkbox"
+                    checked={valor.productos.includes(p.idProducto)}
+                    onChange={(e) =>
+                      cambiar({
+                        ...valor,
+                        productos: e.target.checked ? [...valor.productos, p.idProducto] : valor.productos.filter((id) => id !== p.idProducto),
+                      })
+                    }
+                  />
+                  <span style={{ flex: 1 }}>{p.nombreProducto}</span>
+                  <span className="mono" style={{ color: "var(--texto-3)" }}>
+                    {p.idProducto}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+          <p className="field-help">{valor.productos.length} seleccionados</p>
+        </fieldset>
+      )}
     />
   );
 }

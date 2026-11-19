@@ -1,17 +1,35 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { Badge, Button, Card, ConfirmModal, Input, Mensajes, Select } from "../../components/ui";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  ConfirmModal,
+  Drawer,
+  EmptyState,
+  IconButton,
+  Input,
+  Modal,
+  PageHeader,
+  Pagination,
+  Select,
+  SkeletonRows,
+  usePaginacion,
+  useToast,
+  type TonoBadge,
+} from "../../components/ui";
+import { Icon } from "../../components/icons";
+import { useResumen } from "../../components/shell";
 import { mensajeDeError } from "../../services/api";
 import { transporteService } from "../../services/catalogService";
-import {
-  actualizarDetallesEntrega,
-  cambiarEstadoEntrega,
-  crearEntrega,
-  obtenerEntregas,
-} from "../../services/logisticsService";
+import { actualizarDetallesEntrega, cambiarEstadoEntrega, crearEntrega, obtenerEntregas } from "../../services/logisticsService";
 import { obtenerProductos } from "../../services/productService";
+import { descargarCSV, fechaSimple } from "../../lib/format";
 import type { DetalleEntrega, Entrega, EstadoEntrega, Producto, Transporte } from "../../types";
+
+const ESTADOS: EstadoEntrega[] = ["pendiente", "asignada", "en_transito", "entregada", "cancelada"];
 
 const etiquetas: Record<EstadoEntrega, string> = {
   pendiente: "Pendiente",
@@ -21,19 +39,12 @@ const etiquetas: Record<EstadoEntrega, string> = {
   cancelada: "Cancelada",
 };
 
-const tonos: Record<EstadoEntrega, "neutral" | "success" | "warning" | "danger"> = {
+const tonos: Record<EstadoEntrega, TonoBadge> = {
   pendiente: "neutral",
-  asignada: "warning",
+  asignada: "info",
   en_transito: "warning",
   entregada: "success",
   cancelada: "danger",
-};
-
-/** Botón que lleva a cada estado siguiente (la asignación tiene su propio control). */
-const acciones: Partial<Record<EstadoEntrega, string>> = {
-  en_transito: "Despachar",
-  entregada: "Marcar entregada",
-  cancelada: "Cancelar",
 };
 
 // Fecha local AAAA-MM-DD (toISOString usaría UTC y daría el día siguiente por la noche en Perú).
@@ -41,20 +52,25 @@ const hoy = () => new Date().toLocaleDateString("en-CA");
 const nuevaLinea = (): DetalleEntrega => ({ idProducto: "", cantidad: 1 });
 
 export default function DeliveriesPage() {
+  const toast = useToast();
+  const { recargar } = useResumen();
   const [entregas, setEntregas] = useState<Entrega[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [transportes, setTransportes] = useState<Transporte[]>([]);
+  const [pestana, setPestana] = useState<EstadoEntrega | "todas">("todas");
+  const [busqueda, setBusqueda] = useState("");
+  const [panel, setPanel] = useState<null | "nueva" | Entrega>(null);
   const [destinatario, setDestinatario] = useState("");
   const [direccion, setDireccion] = useState("");
   const [fecha, setFecha] = useState(hoy());
   const [lineas, setLineas] = useState<DetalleEntrega[]>([nuevaLinea()]);
-  const [editando, setEditando] = useState<Entrega | null>(null);
-  const [vehiculo, setVehiculo] = useState<Record<string, string>>({});
+  const [asignando, setAsignando] = useState<Entrega | null>(null);
+  const [vehiculo, setVehiculo] = useState("");
   const [aCancelar, setACancelar] = useState<Entrega | null>(null);
   const [cargando, setCargando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
-  const [exito, setExito] = useState("");
+  const [errorPanel, setErrorPanel] = useState("");
 
   const cargar = async () => {
     try {
@@ -67,6 +83,8 @@ export default function DeliveriesPage() {
   };
 
   useEffect(() => {
+    const estado = new URLSearchParams(window.location.search).get("estado") as EstadoEntrega | null;
+    if (estado && ESTADOS.includes(estado)) setPestana(estado);
     cargar();
     Promise.all([obtenerProductos(), transporteService.listar()])
       .then(([prods, trps]) => {
@@ -76,22 +94,24 @@ export default function DeliveriesPage() {
       .catch((err) => setError(mensajeDeError(err)));
   }, []);
 
-  const reiniciar = () => {
-    setDestinatario("");
-    setDireccion("");
-    setFecha(hoy());
-    setLineas([nuevaLinea()]);
-    setEditando(null);
-  };
+  const filtradas = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    return entregas.filter(
+      (e) =>
+        (pestana === "todas" || e.estado === pestana) &&
+        (!q || e.destinatario.toLowerCase().includes(q) || e.direccion.toLowerCase().includes(q) || e.idEntrega.toLowerCase().includes(q))
+    );
+  }, [entregas, pestana, busqueda]);
+  const pag = usePaginacion(filtradas, 10);
 
-  /** Ejecuta una operación, muestra su resultado y vuelve a consultar la lista. */
-  const ejecutar = async (operacion: () => Promise<unknown>, mensaje: string) => {
+  /** Ejecuta una operación, muestra el aviso y vuelve a consultar la lista. */
+  const ejecutar = async (operacion: () => Promise<unknown>, titulo: string, descripcion?: string) => {
     try {
       setError("");
-      setExito("");
       await operacion();
-      setExito(mensaje);
+      toast({ titulo, descripcion });
       await cargar();
+      recargar();
       return true;
     } catch (err) {
       setError(mensajeDeError(err));
@@ -99,176 +119,322 @@ export default function DeliveriesPage() {
     }
   };
 
-  const guardar = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setEnviando(true);
-    const detalles = lineas.map((l) => ({ idProducto: l.idProducto, cantidad: Number(l.cantidad) }));
-    const ok = editando
-      ? await ejecutar(() => actualizarDetallesEntrega(editando.idEntrega, detalles), "Productos actualizados.")
-      : await ejecutar(() => crearEntrega({ destinatario, direccion, fecha, detalles }), "Entrega creada.");
-    if (ok) reiniciar();
-    setEnviando(false);
+  const abrirNueva = () => {
+    setDestinatario("");
+    setDireccion("");
+    setFecha(hoy());
+    setLineas([nuevaLinea()]);
+    setErrorPanel("");
+    setPanel("nueva");
   };
 
-  const cambiarLinea = (i: number, cambio: Partial<DetalleEntrega>) =>
-    setLineas(lineas.map((l, j) => (j === i ? { ...l, ...cambio } : l)));
+  const abrirEdicion = (e: Entrega) => {
+    setLineas(e.detalles.map((d) => ({ idProducto: d.idProducto, cantidad: d.cantidad })));
+    setErrorPanel("");
+    setPanel(e);
+  };
+
+  const guardar = async (ev: FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    setEnviando(true);
+    setErrorPanel("");
+    const detalles = lineas.map((l) => ({ idProducto: l.idProducto, cantidad: Number(l.cantidad) }));
+    try {
+      if (panel === "nueva") {
+        await crearEntrega({ destinatario, direccion, fecha, detalles });
+        toast({ titulo: "Entrega creada", descripcion: `${destinatario} · ${fechaSimple(fecha)}` });
+      } else if (panel) {
+        await actualizarDetallesEntrega(panel.idEntrega, detalles);
+        toast({ titulo: "Productos actualizados", descripcion: panel.idEntrega });
+      }
+      setPanel(null);
+      await cargar();
+      recargar();
+    } catch (err) {
+      setErrorPanel(mensajeDeError(err));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const cambiarLinea = (i: number, cambio: Partial<DetalleEntrega>) => setLineas(lineas.map((l, j) => (j === i ? { ...l, ...cambio } : l)));
+
+  const conductor = (e: Entrega) => transportes.find((t) => t.idTransporte === e.idTransporte)?.conductor;
+
+  const exportar = () =>
+    descargarCSV(
+      "entregas.csv",
+      ["ID", "Fecha", "Destinatario", "Dirección", "Productos", "Vehículo", "Estado"],
+      filtradas.map((e) => [e.idEntrega, e.fecha, e.destinatario, e.direccion, e.detalles.map((d) => `${d.nombreProducto} x${d.cantidad}`).join(", "), e.placa || "", etiquetas[e.estado]])
+    );
+
+  const editando = panel && panel !== "nueva" ? panel : null;
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Entregas</h1>
-          <p className="page-subtitle">
-            Pendiente → Asignada → En tránsito → Entregada. Despachar no descuenta stock: registra la salida en
-            Movimientos.
-          </p>
+      <PageHeader
+        title="Entregas"
+        subtitle="Despachos a clientes y su estado de ruta"
+        actions={
+          <>
+            <Button variant="secondary" icon="descargar" onClick={exportar} disabled={filtradas.length === 0}>
+              Exportar
+            </Button>
+            <Button icon="mas" onClick={abrirNueva}>
+              Nueva entrega
+            </Button>
+          </>
+        }
+      />
+
+      {error && <Alert tone="danger" title="No se pudo completar la operación">{error}</Alert>}
+
+      <Card flush>
+        <div className="tabs" role="tablist" aria-label="Estado de la entrega">
+          {(["todas", ...ESTADOS] as const).map((p) => {
+            const n = p === "todas" ? entregas.length : entregas.filter((e) => e.estado === p).length;
+            return (
+              <button key={p} type="button" role="tab" aria-selected={pestana === p} className={`tab${pestana === p ? " active" : ""}`} onClick={() => setPestana(p)}>
+                {p === "todas" ? "Todas" : etiquetas[p]}
+                <span className="tab-count">{n}</span>
+              </button>
+            );
+          })}
+          <span className="toolbar-spacer" />
+          <div style={{ width: 260, flexShrink: 0, padding: "8px 0" }}>
+            <Input icon="buscar" placeholder="Buscar destinatario…" aria-label="Buscar entrega" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          </div>
         </div>
-      </div>
 
-      <Mensajes error={error} exito={exito} />
-
-      <Card title={editando ? `Editar productos de ${editando.idEntrega}` : "Nueva entrega"}>
-        <form onSubmit={guardar} className="space-y-4">
-          {!editando && (
-            <div className="grid gap-4 md:grid-cols-3">
-              <Input id="destinatario" label="Destinatario" value={destinatario}
-                onChange={(e) => setDestinatario(e.target.value)} required />
-              <Input id="direccion" label="Dirección" value={direccion}
-                onChange={(e) => setDireccion(e.target.value)} required />
-              <Input id="fecha" label="Fecha" type="date" value={fecha}
-                onChange={(e) => setFecha(e.target.value)} required />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Productos y cantidades</p>
-            {lineas.map((linea, i) => (
-              <div key={i} className="grid grid-cols-[1fr_8rem_auto] items-end gap-2">
-                <Select id={`producto-${i}`} aria-label="Producto" value={linea.idProducto}
-                  onChange={(e) => cambiarLinea(i, { idProducto: e.target.value })} required>
-                  <option value="">Seleccione un producto...</option>
-                  {productos.map((p) => (
-                    <option key={p.idProducto} value={p.idProducto}>{p.nombreProducto}</option>
-                  ))}
-                </Select>
-                <Input id={`cantidad-${i}`} aria-label="Cantidad" type="number" min="1" value={linea.cantidad}
-                  onChange={(e) => cambiarLinea(i, { cantidad: Number(e.target.value) })} required />
-                <Button variant="ghost" disabled={lineas.length === 1}
-                  onClick={() => setLineas(lineas.filter((_, j) => j !== i))}>
-                  Quitar
-                </Button>
-              </div>
-            ))}
-            <Button variant="ghost" onClick={() => setLineas([...lineas, nuevaLinea()])}>
-              + Agregar producto
-            </Button>
-          </div>
-
-          <div className="flex gap-2">
-            <Button type="submit" disabled={enviando}>
-              {enviando ? "Guardando..." : editando ? "Guardar productos" : "Crear entrega"}
-            </Button>
-            {editando && (
-              <Button variant="ghost" onClick={reiniciar}>Cancelar edición</Button>
-            )}
-          </div>
-        </form>
-      </Card>
-
-      <Card title={`Entregas (${entregas.length})`}>
         {cargando ? (
-          <p className="empty-state">Cargando entregas...</p>
-        ) : entregas.length === 0 ? (
-          <p className="empty-state">No hay entregas registradas.</p>
+          <SkeletonRows rows={5} cols={5} />
+        ) : filtradas.length === 0 ? (
+          entregas.length === 0 ? (
+            <EmptyState icon="entregas" title="Aún no hay entregas" description="Crea la primera entrega para empezar a despachar." action={<Button icon="mas" onClick={abrirNueva}>Nueva entrega</Button>} />
+          ) : (
+            <EmptyState icon="buscar" title="Sin entregas en esta vista" description="Prueba con otra pestaña o búsqueda." />
+          )
         ) : (
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Entrega</th>
-                  <th>Destinatario</th>
-                  <th>Productos</th>
-                  <th>Estado</th>
-                  <th>Vehículo</th>
-                  <th className="text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entregas.map((e) => (
-                  <tr key={e.idEntrega}>
-                    <td>
-                      <div className="mono">{e.idEntrega}</div>
-                      <div className="text-xs text-zinc-500">{e.fecha}</div>
-                    </td>
-                    <td>
-                      <strong>{e.destinatario}</strong>
-                      <div className="text-xs text-zinc-500">{e.direccion}</div>
-                    </td>
-                    <td>
-                      <ul className="text-sm">
-                        {e.detalles.map((d) => (
-                          <li key={d.idProducto}>{d.cantidad} × {d.nombreProducto}</li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td><Badge tone={tonos[e.estado]}>{etiquetas[e.estado]}</Badge></td>
-                    <td className="mono">{e.placa || "—"}</td>
-                    <td>
-                      <div className="flex flex-wrap justify-end gap-2">
-                        {e.siguientes.includes("asignada") && (
-                          <>
-                            <Select id={`vehiculo-${e.idEntrega}`} aria-label="Vehículo"
-                              value={vehiculo[e.idEntrega] || ""}
-                              onChange={(ev) => setVehiculo({ ...vehiculo, [e.idEntrega]: ev.target.value })}>
-                              <option value="">Vehículo...</option>
-                              {transportes.map((t) => (
-                                <option key={t.idTransporte} value={t.idTransporte}>{t.placa} · {t.conductor}</option>
-                              ))}
-                            </Select>
-                            <Button onClick={() => ejecutar(
-                              () => cambiarEstadoEntrega(e.idEntrega, "asignada", vehiculo[e.idEntrega] || ""),
-                              "Vehículo asignado.")}>
-                              Asignar
-                            </Button>
-                          </>
-                        )}
-                        {e.siguientes.filter((s) => acciones[s]).map((s) => (
-                          <Button key={s} variant={s === "cancelada" ? "danger" : "ghost"}
-                            onClick={() => s === "cancelada"
-                              ? setACancelar(e)
-                              : ejecutar(() => cambiarEstadoEntrega(e.idEntrega, s), `Entrega ${etiquetas[s].toLowerCase()}.`)}>
-                            {acciones[s]}
-                          </Button>
-                        ))}
-                        {(e.estado === "pendiente" || e.estado === "asignada") && (
-                          <Button variant="ghost" onClick={() => {
-                            setEditando(e);
-                            setLineas(e.detalles.map((d) => ({ idProducto: d.idProducto, cantidad: d.cantidad })));
-                          }}>
-                            Editar productos
-                          </Button>
-                        )}
-                      </div>
-                    </td>
+          <>
+            <div className="table-wrap">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Entrega</th>
+                    <th>Destinatario</th>
+                    <th>Productos</th>
+                    <th>Vehículo</th>
+                    <th>Estado</th>
+                    <th className="derecha">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {pag.visibles.map((e) => (
+                    <tr key={e.idEntrega}>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <p style={{ fontSize: 13, fontWeight: 500 }}>{e.idEntrega}</p>
+                        <p className="cell-sub">{fechaSimple(e.fecha)}</p>
+                      </td>
+                      <td>
+                        <p className="cell-main">{e.destinatario}</p>
+                        <p className="cell-sub" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <Icon name="ubicacion" size={12} />
+                          {e.direccion}
+                        </p>
+                      </td>
+                      <td style={{ maxWidth: 240 }}>
+                        <p style={{ fontSize: 13, fontWeight: 500 }}>
+                          {e.detalles.length} {e.detalles.length === 1 ? "producto" : "productos"}
+                        </p>
+                        <p className="cell-sub clamp-2" title={e.detalles.map((d) => `${d.nombreProducto} ×${d.cantidad}`).join("\n")}>
+                          {e.detalles.map((d) => `${d.nombreProducto} ×${d.cantidad}`).join(" · ")}
+                        </p>
+                      </td>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        {e.placa ? (
+                          <>
+                            <p style={{ fontSize: 13, fontWeight: 500 }}>{e.placa}</p>
+                            <p className="cell-sub">{conductor(e)}</p>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 13, color: "var(--texto-3)" }}>Sin asignar</span>
+                        )}
+                      </td>
+                      <td>
+                        <Badge tone={tonos[e.estado]} dot>
+                          {etiquetas[e.estado]}
+                        </Badge>
+                      </td>
+                      <td className="derecha">
+                        <div className="row-actions">
+                          {e.siguientes.includes("asignada") && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              icon="camion"
+                              onClick={() => {
+                                setVehiculo(e.idTransporte || "");
+                                setAsignando(e);
+                              }}
+                            >
+                              Asignar vehículo
+                            </Button>
+                          )}
+                          {e.siguientes.includes("en_transito") && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              icon="flecha-derecha"
+                              onClick={() => ejecutar(() => cambiarEstadoEntrega(e.idEntrega, "en_transito"), "Entrega en ruta", "Recuerda registrar la salida en Movimientos.")}
+                            >
+                              Iniciar ruta
+                            </Button>
+                          )}
+                          {e.siguientes.includes("entregada") && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              icon="check"
+                              onClick={() => ejecutar(() => cambiarEstadoEntrega(e.idEntrega, "entregada"), "Entrega completada", `${e.idEntrega} · ${e.destinatario}`)}
+                            >
+                              Marcar entregada
+                            </Button>
+                          )}
+                          {(e.estado === "pendiente" || e.estado === "asignada") && <IconButton icon="editar" label={`Editar productos de ${e.idEntrega}`} onClick={() => abrirEdicion(e)} />}
+                          {e.siguientes.includes("cancelada") && <IconButton icon="cerrar" tone="danger" label={`Cancelar ${e.idEntrega}`} onClick={() => setACancelar(e)} />}
+                          {e.siguientes.length === 0 && <span style={{ fontSize: 13, color: "var(--texto-3)" }}>{e.estado === "entregada" ? "Completada" : "—"}</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination {...pag} sustantivo="entregas" />
+          </>
         )}
       </Card>
 
+      <Drawer
+        abierto={panel !== null}
+        titulo={editando ? `Productos de ${editando.idEntrega}` : "Nueva entrega"}
+        subtitulo={editando ? `${editando.destinatario} · ${etiquetas[editando.estado]}` : "Se crea en estado Pendiente. El vehículo se asigna después."}
+        onCerrar={() => setPanel(null)}
+        onSubmit={guardar}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPanel(null)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={enviando}>
+              {enviando ? "Guardando…" : editando ? "Guardar productos" : "Crear entrega"}
+            </Button>
+          </>
+        }
+      >
+        {errorPanel && <Alert tone="danger" title="Revisa los datos">{errorPanel}</Alert>}
+        {!editando && (
+          <>
+            <Input id="destinatario" label="Destinatario" placeholder="Ej. Bodega Santa Rosa" value={destinatario} onChange={(e) => setDestinatario(e.target.value)} required autoFocus />
+            <Input id="direccion" label="Dirección" placeholder="Ej. Av. Universitaria 3210, Los Olivos" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
+            <div style={{ maxWidth: 220 }}>
+              <Input id="fecha" label="Fecha de entrega" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+            </div>
+          </>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: editando ? 0 : 16, borderTop: editando ? "none" : "1px solid var(--borde)" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <p style={{ flex: 1, fontWeight: 600 }}>Productos a entregar</p>
+            <span className="cell-sub">
+              {lineas.length} {lineas.length === 1 ? "línea" : "líneas"}
+            </span>
+          </div>
+          {lineas.map((linea, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 88px auto", gap: 8, alignItems: "center" }}>
+              <Select id={`producto-${i}`} aria-label={`Producto de la línea ${i + 1}`} value={linea.idProducto} onChange={(e) => cambiarLinea(i, { idProducto: e.target.value })} required>
+                <option value="">Seleccione un producto…</option>
+                {productos.map((p) => (
+                  <option key={p.idProducto} value={p.idProducto}>
+                    {p.nombreProducto}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                id={`cantidad-${i}`}
+                aria-label={`Cantidad de la línea ${i + 1}`}
+                type="number"
+                min="1"
+                value={linea.cantidad}
+                onChange={(e) => cambiarLinea(i, { cantidad: Number(e.target.value) })}
+                required
+              />
+              <IconButton icon="eliminar" tone="danger" label={`Quitar línea ${i + 1}`} disabled={lineas.length === 1} onClick={() => setLineas(lineas.filter((_, j) => j !== i))} />
+            </div>
+          ))}
+          <div>
+            <Button variant="subtle" size="sm" icon="mas" onClick={() => setLineas([...lineas, nuevaLinea()])}>
+              Agregar producto
+            </Button>
+          </div>
+        </div>
+        <Alert tone="info" title="Flujo de estados">
+          Pendiente → Asignada → En tránsito → Entregada. Despachar no descuenta stock: registra la salida en Movimientos.
+        </Alert>
+      </Drawer>
+
+      <Modal
+        abierto={Boolean(asignando)}
+        titulo="Asignar vehículo"
+        subtitulo={asignando ? `${asignando.idEntrega} · ${asignando.destinatario}` : undefined}
+        ancho={440}
+        onCerrar={() => setAsignando(null)}
+        onSubmit={async (ev) => {
+          ev.preventDefault();
+          if (!asignando) return;
+          const e = asignando;
+          const t = transportes.find((x) => x.idTransporte === vehiculo);
+          setAsignando(null);
+          await ejecutar(() => cambiarEstadoEntrega(e.idEntrega, "asignada", vehiculo), "Vehículo asignado", t ? `${t.placa} · ${t.conductor}` : e.idEntrega);
+        }}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setAsignando(null)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={!vehiculo}>
+              Asignar
+            </Button>
+          </>
+        }
+      >
+        {transportes.length === 0 ? (
+          <Alert tone="warning" title="No hay vehículos registrados">
+            Agrega uno en Transportes para poder asignarlo.
+          </Alert>
+        ) : (
+          <Select id="vehiculo" label="Vehículo" value={vehiculo} onChange={(e) => setVehiculo(e.target.value)} required autoFocus>
+            <option value="">Seleccione un vehículo…</option>
+            {transportes.map((t) => (
+              <option key={t.idTransporte} value={t.idTransporte}>
+                {t.placa} · {t.conductor}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Modal>
+
       <ConfirmModal
         abierto={Boolean(aCancelar)}
-        titulo="Cancelar entrega"
-        mensaje={aCancelar ? `¿Cancelar la entrega ${aCancelar.idEntrega} para ${aCancelar.destinatario}?` : ""}
+        titulo="¿Cancelar esta entrega?"
+        mensaje={aCancelar ? `La entrega ${aCancelar.idEntrega} para ${aCancelar.destinatario} pasará a Cancelada.` : ""}
         textoConfirmar="Sí, cancelar entrega"
+        textoCancelar="No, mantener"
         onCancelar={() => setACancelar(null)}
         onConfirmar={async () => {
           if (!aCancelar) return;
-          const id = aCancelar.idEntrega;
+          const e = aCancelar;
           setACancelar(null);
-          await ejecutar(() => cambiarEstadoEntrega(id, "cancelada"), "Entrega cancelada.");
+          await ejecutar(() => cambiarEstadoEntrega(e.idEntrega, "cancelada"), "Entrega cancelada", `${e.idEntrega} · ${e.destinatario}`);
         }}
       />
     </>

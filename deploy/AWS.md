@@ -8,7 +8,7 @@ usar un dominio con HTTPS automático.
 El archivo `compose.ec2.yaml` es independiente del `docker-compose.yml` de
 desarrollo. No combines ambos con múltiples opciones `-f`: el archivo local
 publica el puerto de PostgreSQL. La base de EC2 empieza con los datos de
-`init.sql`; no copia los registros de tu computadora.
+`db/init.sql`; no copia los registros de tu computadora.
 
 El frontend conserva Next.js 15. Se fija PostCSS 8.5.32 mediante `overrides`
 para corregir los avisos de seguridad de la dependencia transitiva incluida
@@ -198,7 +198,7 @@ sudo docker compose --env-file .env.ec2 -f compose.ec2.yaml exec -T db psql -v O
 
 La migración es idempotente, transaccional y conserva la tabla `almacen`
 original. Detalles en el README, sección 6.
-No uses `down -v`: elimina los volúmenes y los datos. `init.sql` solo se
+No uses `down -v`: elimina los volúmenes y los datos. `db/init.sql` solo se
 ejecuta cuando el volumen de PostgreSQL está vacío. Cambiar
 `POSTGRES_PASSWORD` en el archivo no cambia la contraseña de una base ya
 inicializada; requiere una rotación coordinada dentro de PostgreSQL.

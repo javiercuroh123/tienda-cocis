@@ -51,7 +51,7 @@ func (d *DatabaseConnection) ObtenerConexion() *sql.DB {
 }
 
 // verificarEsquema avisa si falta la migración logística. El esquema lo crean
-// init.sql y db/migrations/*.sql; la aplicación ya no crea tablas al arrancar.
+// db/init.sql y db/migrations/*.sql; la aplicación ya no crea tablas al arrancar.
 func (d *DatabaseConnection) verificarEsquema() {
 	var aplicada bool
 	err := d.conexion.QueryRow(`SELECT EXISTS (SELECT 1 FROM schema_migraciones WHERE "version" = '001_logistica')`).Scan(&aplicada)

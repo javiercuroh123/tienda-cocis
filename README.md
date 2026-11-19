@@ -9,9 +9,14 @@ Aplicación web Full Stack para la gestión de **productos**, **inventario por a
 ```text
 ├── docker-compose.yml               # PostgreSQL 17 local (puerto 5434)
 ├── compose.ec2.yaml                 # db + backend + frontend + Caddy (despliegue)
-├── init.sql                         # Esquema original (productos, almacen) + datos semilla
-├── db/migrations/
-│   └── 001_logistica.sql            # Migración versionada al modelo logístico
+├── db/
+│   ├── init.sql                     # Esquema original (productos, almacen) + datos semilla
+│   └── migrations/
+│       └── 001_logistica.sql        # Migración versionada al modelo logístico
+├── deploy/                          # Guía de EC2, Caddyfile y scripts de instalación
+├── docs/
+│   ├── diagrama-clases.md           # Diagramas de clases (Mermaid + PNG/SVG)
+│   └── exposicion/                  # Diapositivas y guion de la exposición
 ├── tienda-cocis-backend/            # Go 1.23, net/http, database/sql, lib/pq
 │   ├── cmd/server/main.go           # Arranque: Singleton -> repositorios -> servicios -> rutas
 │   └── internal/
@@ -93,7 +98,7 @@ Formato JSON; los errores tienen la forma `{"error": "mensaje"}` con código 400
 Requisitos: Docker, Go 1.23 o superior y Node 22 o superior.
 
 ```bash
-# 1. PostgreSQL 17. En un volumen vacío ejecuta init.sql y luego 001_logistica.sql
+# 1. PostgreSQL 17. En un volumen vacío ejecuta db/init.sql y luego 001_logistica.sql
 docker compose up -d
 
 # 2. Backend (http://localhost:8080)
@@ -143,7 +148,7 @@ Las pruebas de integración usan PostgreSQL real y **modifican datos**, así que
 
 ```bash
 docker run -d --name cocis-test -e POSTGRES_USER=cocis -e POSTGRES_PASSWORD=cocis123 -e POSTGRES_DB=tiendacocis -p 55432:5432 \
-  -v "$PWD/init.sql:/docker-entrypoint-initdb.d/000_init.sql:ro" \
+  -v "$PWD/db/init.sql:/docker-entrypoint-initdb.d/000_init.sql:ro" \
   -v "$PWD/db/migrations/001_logistica.sql:/docker-entrypoint-initdb.d/001_logistica.sql:ro" postgres:17-alpine
 cd tienda-cocis-backend
 TEST_DATABASE_URL="postgres://cocis:cocis123@localhost:55432/tiendacocis?sslmode=disable" go test -count=1 ./...
