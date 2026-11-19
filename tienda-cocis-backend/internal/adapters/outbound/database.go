@@ -41,7 +41,7 @@ func ObtenerInstancia() *DatabaseConnection {
 			connectionString: cadena,
 			conexion:         db,
 		}
-		instancia.inicializarTablas()
+		instancia.verificarEsquema()
 	})
 	return instancia
 }
@@ -50,24 +50,12 @@ func (d *DatabaseConnection) ObtenerConexion() *sql.DB {
 	return d.conexion
 }
 
-func (d *DatabaseConnection) inicializarTablas() {
-	esquema := `
-	CREATE TABLE IF NOT EXISTS productos (
-		"idProducto" VARCHAR(64) PRIMARY KEY,
-		"nombreProducto" VARCHAR(150) NOT NULL,
-		"precioUnidad" DOUBLE PRECISION NOT NULL,
-		"categoria" VARCHAR(100) NOT NULL
-	);
-
-	CREATE TABLE IF NOT EXISTS almacen (
-		"idInventorio" VARCHAR(64) PRIMARY KEY,
-		"idProducto" VARCHAR(64) NOT NULL UNIQUE REFERENCES productos("idProducto") ON DELETE CASCADE,
-		"stock" INTEGER NOT NULL DEFAULT 0,
-		"stockMin" INTEGER NOT NULL DEFAULT 5,
-		"ultimaActualizacion" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-	);`
-
-	if _, err := d.conexion.Exec(esquema); err != nil {
-		log.Printf("Error inicializando tablas: %v", err)
+// verificarEsquema avisa si falta la migración logística. El esquema lo crean
+// init.sql y db/migrations/*.sql; la aplicación ya no crea tablas al arrancar.
+func (d *DatabaseConnection) verificarEsquema() {
+	var aplicada bool
+	err := d.conexion.QueryRow(`SELECT EXISTS (SELECT 1 FROM schema_migraciones WHERE "version" = '001_logistica')`).Scan(&aplicada)
+	if err != nil || !aplicada {
+		log.Printf("Aviso: falta aplicar db/migrations/001_logistica.sql (ver README)")
 	}
 }

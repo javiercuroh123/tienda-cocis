@@ -1,23 +1,18 @@
 package core
 
 import (
-	"errors"
-	"strings"
-	"time"
 	"tienda-cocis-backend/internal/domain"
 	"tienda-cocis-backend/internal/ports"
 )
 
+// ServicioInventario consulta existencias y aplica el Patrón Strategy a la valoración.
+// Las cantidades cambian solo mediante ServicioMovimiento.
 type ServicioInventario struct {
 	repoInventario ports.InventoryRepository
-	repoProducto   ports.ProductRepository
 }
 
-func NuevoServicioInventario(repoInv ports.InventoryRepository, repoProd ports.ProductRepository) ports.InventoryService {
-	return &ServicioInventario{
-		repoInventario: repoInv,
-		repoProducto:   repoProd,
-	}
+func NuevoServicioInventario(repoInv ports.InventoryRepository) ports.InventoryService {
+	return &ServicioInventario{repoInventario: repoInv}
 }
 
 func aplicarReglaEstrategia(item *domain.Inventory, estrategia domain.InventoryStrategy) {
@@ -25,8 +20,8 @@ func aplicarReglaEstrategia(item *domain.Inventory, estrategia domain.InventoryS
 	item.ValorCalculado = estrategia.CalcularValor(item.Stock, item.PrecioUnidad)
 }
 
-func (s *ServicioInventario) ListarInventario(tipoEstrategia string) ([]domain.Inventory, error) {
-	registros, err := s.repoInventario.ListarInventario()
+func (s *ServicioInventario) ListarInventario(tipoEstrategia string, idAlmacen string) ([]domain.Inventory, error) {
+	registros, err := s.repoInventario.ListarInventario(idAlmacen)
 	if err != nil {
 		return nil, err
 	}
@@ -42,62 +37,18 @@ func (s *ServicioInventario) ObtenerInventario(idInventorio string, tipoEstrateg
 	if err != nil {
 		return nil, err
 	}
-	estrategia := domain.SeleccionarEstrategia(tipoEstrategia)
-	aplicarReglaEstrategia(registro, estrategia)
+	aplicarReglaEstrategia(registro, domain.SeleccionarEstrategia(tipoEstrategia))
 	return registro, nil
 }
 
-func (s *ServicioInventario) CrearInventario(inventario domain.Inventory, tipoEstrategia string) (*domain.Inventory, error) {
-	if strings.TrimSpace(inventario.IdProducto) == "" {
-		return nil, errors.New("el idProducto es obligatorio")
+func (s *ServicioInventario) ActualizarStockMinimo(idInventorio string, stockMin int, tipoEstrategia string) (*domain.Inventory, error) {
+	if stockMin < 0 {
+		return nil, domain.Invalido("el stockMin no puede ser negativo")
 	}
-	if inventario.Stock < 0 || inventario.StockMin < 0 {
-		return nil, errors.New("el stock y stockMin no pueden ser negativos")
-	}
-
-	producto, err := s.repoProducto.BuscarProducto(inventario.IdProducto)
-	if err != nil {
-		return nil, errors.New("el producto indicado no existe")
-	}
-
-	estrategia := domain.SeleccionarEstrategia(tipoEstrategia)
-	if strings.TrimSpace(inventario.IdInventorio) == "" {
-		inventario.IdInventorio = generarIdentificador("inv")
-	}
-	inventario.Stock = estrategia.CalcularStock(inventario.Stock)
-	inventario.UltimaActualizacion = time.Now()
-
-	if err := s.repoInventario.GuardarInventario(inventario); err != nil {
+	if err := s.repoInventario.ModificarStockMinimo(idInventorio, stockMin); err != nil {
 		return nil, err
 	}
-
-	inventario.NombreProducto = producto.NombreProducto
-	inventario.PrecioUnidad = producto.PrecioUnidad
-	aplicarReglaEstrategia(&inventario, estrategia)
-	return &inventario, nil
-}
-
-func (s *ServicioInventario) ActualizarStock(idInventorio string, stock int, stockMin int, tipoEstrategia string) (*domain.Inventory, error) {
-	if stock < 0 || stockMin < 0 {
-		return nil, errors.New("el stock y stockMin no pueden ser negativos")
-	}
-
-	actual, err := s.repoInventario.BuscarInventario(idInventorio)
-	if err != nil {
-		return nil, err
-	}
-
-	estrategia := domain.SeleccionarEstrategia(tipoEstrategia)
-	actual.Stock = estrategia.CalcularStock(stock)
-	actual.StockMin = stockMin
-	actual.UltimaActualizacion = time.Now()
-
-	if err := s.repoInventario.ModificarInventario(*actual); err != nil {
-		return nil, err
-	}
-
-	aplicarReglaEstrategia(actual, estrategia)
-	return actual, nil
+	return s.ObtenerInventario(idInventorio, tipoEstrategia)
 }
 
 func (s *ServicioInventario) EliminarInventario(idInventorio string) error {

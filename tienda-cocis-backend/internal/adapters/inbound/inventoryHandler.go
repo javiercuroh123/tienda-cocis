@@ -1,10 +1,8 @@
 package inbound
 
 import (
-	"encoding/json"
 	"net/http"
 	"strings"
-	"tienda-cocis-backend/internal/domain"
 	"tienda-cocis-backend/internal/ports"
 )
 
@@ -16,23 +14,24 @@ func NuevoControladorInventario(servicio ports.InventoryService) *ControladorInv
 	return &ControladorInventario{servicio: servicio}
 }
 
+// solicitudInventario: solo el stock mínimo es editable; la cantidad cambia con /api/movements.
 type solicitudInventario struct {
-	IdInventorio string `json:"idInventorio"`
-	IdProducto   string `json:"idProducto"`
-	Stock        int    `json:"stock"`
-	StockMin     int    `json:"stockMin"`
-	Estrategia   string `json:"estrategia"`
+	StockMin   int    `json:"stockMin"`
+	Estrategia string `json:"estrategia"`
 }
 
 func (c *ControladorInventario) ManejarInventario(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		c.listarInventario(w, r)
-	case http.MethodPost:
-		c.crearInventario(w, r)
-	default:
-		responderError(w, http.StatusMethodNotAllowed, "metodo no permitido")
+	if r.Method != http.MethodGet {
+		responderError(w, http.StatusMethodNotAllowed, "metodo no permitido; registra existencias en /api/movements")
+		return
 	}
+	consulta := r.URL.Query()
+	registros, err := c.servicio.ListarInventario(consulta.Get("estrategia"), consulta.Get("idAlmacen"))
+	if err != nil {
+		responderErrorDe(w, err, http.StatusInternalServerError)
+		return
+	}
+	responderJSON(w, http.StatusOK, registros)
 }
 
 func (c *ControladorInventario) ManejarInventarioPorId(w http.ResponseWriter, r *http.Request) {
@@ -41,80 +40,34 @@ func (c *ControladorInventario) ManejarInventarioPorId(w http.ResponseWriter, r 
 		responderError(w, http.StatusBadRequest, "idInventorio requerido")
 		return
 	}
+	estrategia := r.URL.Query().Get("estrategia")
 
 	switch r.Method {
 	case http.MethodGet:
-		c.obtenerInventario(w, r, id)
+		registro, err := c.servicio.ObtenerInventario(id, estrategia)
+		if err != nil {
+			responderErrorDe(w, err, http.StatusNotFound)
+			return
+		}
+		responderJSON(w, http.StatusOK, registro)
 	case http.MethodPut:
-		c.actualizarStock(w, r, id)
+		var entrada solicitudInventario
+		if !decodificar(w, r, &entrada) {
+			return
+		}
+		actualizado, err := c.servicio.ActualizarStockMinimo(id, entrada.StockMin, entrada.Estrategia)
+		if err != nil {
+			responderErrorDe(w, err, http.StatusBadRequest)
+			return
+		}
+		responderJSON(w, http.StatusOK, actualizado)
 	case http.MethodDelete:
-		c.eliminarInventario(w, id)
+		if err := c.servicio.EliminarInventario(id); err != nil {
+			responderErrorDe(w, err, http.StatusNotFound)
+			return
+		}
+		responderJSON(w, http.StatusOK, map[string]string{"mensaje": "inventario eliminado"})
 	default:
 		responderError(w, http.StatusMethodNotAllowed, "metodo no permitido")
 	}
-}
-
-func (c *ControladorInventario) listarInventario(w http.ResponseWriter, r *http.Request) {
-	estrategia := r.URL.Query().Get("estrategia")
-	registros, err := c.servicio.ListarInventario(estrategia)
-	if err != nil {
-		responderError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	responderJSON(w, http.StatusOK, registros)
-}
-
-func (c *ControladorInventario) obtenerInventario(w http.ResponseWriter, r *http.Request, idInventorio string) {
-	estrategia := r.URL.Query().Get("estrategia")
-	registro, err := c.servicio.ObtenerInventario(idInventorio, estrategia)
-	if err != nil {
-		responderError(w, http.StatusNotFound, err.Error())
-		return
-	}
-	responderJSON(w, http.StatusOK, registro)
-}
-
-func (c *ControladorInventario) crearInventario(w http.ResponseWriter, r *http.Request) {
-	var entrada solicitudInventario
-	if err := json.NewDecoder(r.Body).Decode(&entrada); err != nil {
-		responderError(w, http.StatusBadRequest, "formato JSON invalido")
-		return
-	}
-
-	nuevo := domain.Inventory{
-		IdInventorio: entrada.IdInventorio,
-		IdProducto:   entrada.IdProducto,
-		Stock:        entrada.Stock,
-		StockMin:     entrada.StockMin,
-	}
-
-	creado, err := c.servicio.CrearInventario(nuevo, entrada.Estrategia)
-	if err != nil {
-		responderError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	responderJSON(w, http.StatusCreated, creado)
-}
-
-func (c *ControladorInventario) actualizarStock(w http.ResponseWriter, r *http.Request, idInventorio string) {
-	var entrada solicitudInventario
-	if err := json.NewDecoder(r.Body).Decode(&entrada); err != nil {
-		responderError(w, http.StatusBadRequest, "formato JSON invalido")
-		return
-	}
-
-	actualizado, err := c.servicio.ActualizarStock(idInventorio, entrada.Stock, entrada.StockMin, entrada.Estrategia)
-	if err != nil {
-		responderError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	responderJSON(w, http.StatusOK, actualizado)
-}
-
-func (c *ControladorInventario) eliminarInventario(w http.ResponseWriter, idInventorio string) {
-	if err := c.servicio.EliminarInventario(idInventorio); err != nil {
-		responderError(w, http.StatusNotFound, err.Error())
-		return
-	}
-	responderJSON(w, http.StatusOK, map[string]string{"mensaje": "inventario eliminado"})
 }

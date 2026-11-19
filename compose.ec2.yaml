@@ -16,7 +16,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD en .env.ec2}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/000_init.sql:ro
+      - ./db/migrations/001_logistica.sql:/docker-entrypoint-initdb.d/001_logistica.sql:ro
+      - ./db/migrations:/migraciones:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cocis -d tiendacocis"]
       interval: 5s

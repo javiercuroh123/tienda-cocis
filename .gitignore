@@ -12,3 +12,4 @@ backups/
 .deploy-test/
 *.pem
 tienda-cocis-aws.tar.gz
+*.tsbuildinfo

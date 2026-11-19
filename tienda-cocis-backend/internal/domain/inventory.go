@@ -7,7 +7,9 @@ type Inventory struct {
 	IdProducto          string    `json:"idProducto"`
 	NombreProducto      string    `json:"nombreProducto,omitempty"`
 	PrecioUnidad        float64   `json:"precioUnidad,omitempty"`
-	Stock               int       `json:"stock"`
+	IdAlmacen           string    `json:"idAlmacen"`
+	NombreAlmacen       string    `json:"nombreAlmacen,omitempty"`
+	Stock               int       `json:"stock"` // columna inventario.cantidad
 	StockMin            int       `json:"stockMin"`
 	UltimaActualizacion time.Time `json:"ultimaActualizacion"`
 	EstrategiaAplicada  string    `json:"estrategiaAplicada,omitempty"`

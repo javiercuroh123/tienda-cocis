@@ -185,6 +185,19 @@ restáuralo primero en una base separada y verifica las tablas antes de
 considerarlo recuperable. `pg_restore --list` permite inspeccionar su índice.
 
 Después de subir código actualizado, ejecuta de nuevo `up -d --build --wait`.
+
+**Migraciones de esquema.** Si la base ya existía antes del módulo logístico,
+respalda y aplica `db/migrations/001_logistica.sql` antes de levantar el
+backend nuevo (`up -d db` recrea solo el contenedor de PostgreSQL para montar
+`/migraciones`; el volumen se conserva):
+
+```bash
+sudo docker compose --env-file .env.ec2 -f compose.ec2.yaml up -d db
+sudo docker compose --env-file .env.ec2 -f compose.ec2.yaml exec -T db psql -v ON_ERROR_STOP=1 -U cocis -d tiendacocis -f /migraciones/001_logistica.sql
+```
+
+La migración es idempotente, transaccional y conserva la tabla `almacen`
+original. Detalles en el README, sección 6.
 No uses `down -v`: elimina los volúmenes y los datos. `init.sql` solo se
 ejecuta cuando el volumen de PostgreSQL está vacío. Cambiar
 `POSTGRES_PASSWORD` en el archivo no cambia la contraseña de una base ya

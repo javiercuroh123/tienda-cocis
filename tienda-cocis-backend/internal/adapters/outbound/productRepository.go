@@ -50,7 +50,7 @@ func (r *RepositorioProducto) BuscarProducto(idProducto string) (*domain.Product
 func (r *RepositorioProducto) GuardarProducto(p domain.Product) error {
 	consulta := `INSERT INTO productos ("idProducto", "nombreProducto", "precioUnidad", "categoria") VALUES ($1, $2, $3, $4)`
 	_, err := r.db.ObtenerConexion().Exec(consulta, p.IdProducto, p.NombreProducto, p.PrecioUnidad, p.Categoria)
-	return err
+	return traducirError(err)
 }
 
 func (r *RepositorioProducto) ModificarProducto(idProducto string, p domain.Product) error {
@@ -69,12 +69,6 @@ func (r *RepositorioProducto) ModificarProducto(idProducto string, p domain.Prod
 func (r *RepositorioProducto) BorrarProducto(idProducto string) error {
 	consulta := `DELETE FROM productos WHERE "idProducto" = $1`
 	res, err := r.db.ObtenerConexion().Exec(consulta, idProducto)
-	if err != nil {
-		return err
-	}
-	afectadas, _ := res.RowsAffected()
-	if afectadas == 0 {
-		return errors.New("producto no encontrado")
-	}
-	return nil
+	// Un producto con inventario, movimientos o entregas devuelve un conflicto legible.
+	return exigirFila(res, err, "producto no encontrado")
 }

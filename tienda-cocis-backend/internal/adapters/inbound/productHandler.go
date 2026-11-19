@@ -84,7 +84,7 @@ func (c *ControladorProducto) crearProducto(w http.ResponseWriter, r *http.Reque
 	}
 	creado, err := c.servicio.CrearProducto(entrada)
 	if err != nil {
-		responderError(w, http.StatusBadRequest, err.Error())
+		responderErrorDe(w, err, http.StatusBadRequest)
 		return
 	}
 	responderJSON(w, http.StatusCreated, creado)
@@ -106,7 +106,7 @@ func (c *ControladorProducto) actualizarProducto(w http.ResponseWriter, r *http.
 
 func (c *ControladorProducto) eliminarProducto(w http.ResponseWriter, idProducto string) {
 	if err := c.servicio.EliminarProducto(idProducto); err != nil {
-		responderError(w, http.StatusNotFound, err.Error())
+		responderErrorDe(w, err, http.StatusNotFound)
 		return
 	}
 	responderJSON(w, http.StatusOK, map[string]string{"mensaje": "producto eliminado"})

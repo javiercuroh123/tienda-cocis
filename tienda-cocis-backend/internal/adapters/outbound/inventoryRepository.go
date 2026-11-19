@@ -15,15 +15,24 @@ func NuevoRepositorioInventario(db *DatabaseConnection) ports.InventoryRepositor
 	return &RepositorioInventario{db: db}
 }
 
-func (r *RepositorioInventario) ListarInventario() ([]domain.Inventory, error) {
-	consulta := `
-		SELECT a."idInventorio", a."idProducto", p."nombreProducto", p."precioUnidad",
-		       a."stock", a."stockMin", a."ultimaActualizacion"
-		FROM almacen a
-		INNER JOIN productos p ON p."idProducto" = a."idProducto"
-		ORDER BY p."nombreProducto" ASC`
+const consultaInventario = `
+	SELECT i."idInventorio", i."idProducto", p."nombreProducto", p."precioUnidad",
+	       i."idAlmacen", a."nombre", i."cantidad", i."stockMin", i."ultimaActualizacion"
+	FROM inventario i
+	INNER JOIN productos p ON p."idProducto" = i."idProducto"
+	INNER JOIN almacenes a ON a."idAlmacen" = i."idAlmacen"`
 
-	filas, err := r.db.ObtenerConexion().Query(consulta)
+func escanearInventario(fila interface{ Scan(...any) error }) (domain.Inventory, error) {
+	var inv domain.Inventory
+	err := fila.Scan(&inv.IdInventorio, &inv.IdProducto, &inv.NombreProducto, &inv.PrecioUnidad,
+		&inv.IdAlmacen, &inv.NombreAlmacen, &inv.Stock, &inv.StockMin, &inv.UltimaActualizacion)
+	return inv, err
+}
+
+func (r *RepositorioInventario) ListarInventario(idAlmacen string) ([]domain.Inventory, error) {
+	filas, err := r.db.ObtenerConexion().Query(consultaInventario+`
+		WHERE ($1 = '' OR i."idAlmacen" = $1)
+		ORDER BY p."nombreProducto", a."nombre"`, idAlmacen)
 	if err != nil {
 		return nil, err
 	}
@@ -31,44 +40,19 @@ func (r *RepositorioInventario) ListarInventario() ([]domain.Inventory, error) {
 
 	inventarios := []domain.Inventory{}
 	for filas.Next() {
-		var inv domain.Inventory
-		err := filas.Scan(
-			&inv.IdInventorio,
-			&inv.IdProducto,
-			&inv.NombreProducto,
-			&inv.PrecioUnidad,
-			&inv.Stock,
-			&inv.StockMin,
-			&inv.UltimaActualizacion,
-		)
+		inv, err := escanearInventario(filas)
 		if err != nil {
 			return nil, err
 		}
 		inventarios = append(inventarios, inv)
 	}
-	return inventarios, nil
+	return inventarios, filas.Err()
 }
 
 func (r *RepositorioInventario) BuscarInventario(idInventorio string) (*domain.Inventory, error) {
-	consulta := `
-		SELECT a."idInventorio", a."idProducto", p."nombreProducto", p."precioUnidad",
-		       a."stock", a."stockMin", a."ultimaActualizacion"
-		FROM almacen a
-		INNER JOIN productos p ON p."idProducto" = a."idProducto"
-		WHERE a."idInventorio" = $1`
-
-	var inv domain.Inventory
-	err := r.db.ObtenerConexion().QueryRow(consulta, idInventorio).Scan(
-		&inv.IdInventorio,
-		&inv.IdProducto,
-		&inv.NombreProducto,
-		&inv.PrecioUnidad,
-		&inv.Stock,
-		&inv.StockMin,
-		&inv.UltimaActualizacion,
-	)
+	inv, err := escanearInventario(r.db.ObtenerConexion().QueryRow(consultaInventario+` WHERE i."idInventorio" = $1`, idInventorio))
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, errors.New("registro de inventario no encontrado")
+		return nil, domain.NoEncontrado("registro de inventario no encontrado")
 	}
 	if err != nil {
 		return nil, err
@@ -76,39 +60,22 @@ func (r *RepositorioInventario) BuscarInventario(idInventorio string) (*domain.I
 	return &inv, nil
 }
 
-func (r *RepositorioInventario) GuardarInventario(inv domain.Inventory) error {
-	consulta := `
-		INSERT INTO almacen ("idInventorio", "idProducto", "stock", "stockMin", "ultimaActualizacion")
-		VALUES ($1, $2, $3, $4, $5)`
-	_, err := r.db.ObtenerConexion().Exec(consulta, inv.IdInventorio, inv.IdProducto, inv.Stock, inv.StockMin, inv.UltimaActualizacion)
-	return err
+func (r *RepositorioInventario) ModificarStockMinimo(idInventorio string, stockMin int) error {
+	res, err := r.db.ObtenerConexion().Exec(`
+		UPDATE inventario SET "stockMin" = $1, "ultimaActualizacion" = CURRENT_TIMESTAMP
+		WHERE "idInventorio" = $2`, stockMin, idInventorio)
+	return exigirFila(res, err, "registro de inventario no encontrado")
 }
 
-func (r *RepositorioInventario) ModificarInventario(inv domain.Inventory) error {
-	consulta := `
-		UPDATE almacen
-		SET "stock" = $1, "stockMin" = $2, "ultimaActualizacion" = $3
-		WHERE "idInventorio" = $4`
-	res, err := r.db.ObtenerConexion().Exec(consulta, inv.Stock, inv.StockMin, inv.UltimaActualizacion, inv.IdInventorio)
-	if err != nil {
-		return err
-	}
-	afectadas, _ := res.RowsAffected()
-	if afectadas == 0 {
-		return errors.New("registro de inventario no encontrado")
-	}
-	return nil
-}
-
+// BorrarInventario solo elimina filas sin existencias.
 func (r *RepositorioInventario) BorrarInventario(idInventorio string) error {
-	consulta := `DELETE FROM almacen WHERE "idInventorio" = $1`
-	res, err := r.db.ObtenerConexion().Exec(consulta, idInventorio)
-	if err != nil {
+	res, err := r.db.ObtenerConexion().Exec(
+		`DELETE FROM inventario WHERE "idInventorio" = $1 AND "cantidad" = 0`, idInventorio)
+	if err := exigirFila(res, err, "registro de inventario no encontrado"); err != nil {
+		if _, errBuscar := r.BuscarInventario(idInventorio); errBuscar == nil {
+			return domain.Conflicto("el registro tiene existencias; registra una salida antes de eliminarlo")
+		}
 		return err
-	}
-	afectadas, _ := res.RowsAffected()
-	if afectadas == 0 {
-		return errors.New("registro de inventario no encontrado")
 	}
 	return nil
 }
